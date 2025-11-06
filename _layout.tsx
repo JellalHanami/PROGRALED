@@ -1,6 +1,12 @@
 import { Ionicons } from "@expo/vector-icons";
 import { Slot, useRouter } from "expo-router";
 import React, { useState } from "react";
+
+import {getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword} from 'firebase/auth';
+import { initializeApp } from "firebase/app";
+import { firebaseConfig } from "../firebase-config";
+
+
 import {
   Animated,
   Dimensions,
@@ -8,7 +14,69 @@ import {
   Text,
   TouchableOpacity,
   View,
+  TextInput,
+  Button,
 } from "react-native";
+
+
+const LoginScreen: React.FC = () => {
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  const handledCreateAccount = () => {
+    createUserWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        console.log('Cuenta creada para:', user.email);
+      })
+      .catch((error) => {
+        console.error('Error al crear la cuenta:', error.message);
+        alert('Error al crear la cuenta: ' + error.message);
+      });
+  };
+
+  const handleesSignIn = () => {
+    signInWithEmailAndPassword(auth, email, password)
+      .then((userCredential) => {
+        const user = userCredential.user;
+        console.log('Conectado como:', user.email);
+      })
+      .catch((error) => {
+        console.error('Error al iniciar sesión:', error.message);
+        alert('Error al iniciar sesión: ' + error.message);
+      });
+  };
+
+  const handleLogin = () => {
+    console.log('Correo electrónico:', email);
+    console.log('Contraseña:', password);
+  };
+
+  return (
+    <View style={styles.container}>
+      <Text style={styles.title}>Login</Text>
+      <TextInput
+        style={styles.input}
+        placeholder="Email"
+        value={email}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        onChangeText={(text: string) => setEmail(text)}
+      />
+      <TextInput
+        style={styles.input}
+        placeholder="Password"
+        value={password}
+        onChangeText={(text: string) => setPassword(text)}
+        secureTextEntry
+      />
+      <Button title="Login" onPress={handleLogin} />
+    </View>
+  );
+};
 
 const { width } = Dimensions.get("window");
 
@@ -38,7 +106,7 @@ export default function RootLayout() {
 
       {/* Contenido dinámico de cada pantalla */}
       <View style={styles.content}>
-        <Slot /> 
+        <Slot />
       </View>
 
       {/* Menú lateral */}
@@ -152,4 +220,19 @@ const styles = StyleSheet.create({
     bottom: 0,
     backgroundColor: "rgba(0,0,0,0.3)",
   },
+  title: {
+    fontSize: 24,
+    marginBottom: 20,
+  },
+  input: {
+    width: '100%',
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    borderRadius: 5,
+    marginBottom: 10,
+    paddingLeft: 10,
+  },
 });
+
+
